@@ -1,0 +1,112 @@
+name: Build and Deploy LAMP App
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - 'apache/**'
+      - 'php/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/dolphin-vr/lamp-app-source
+
+jobs:
+  build-php:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/php
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest
+      
+      - name: Build and push PHP image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./php
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  
+  build-apache:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/apache
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest
+      
+      - name: Build and push Apache image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apache
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  
+  update-manifests:
+    needs: [build-php, build-apache]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout manifests repo
+        uses: actions/checkout@v4
+        with:
+          repository: dolphin-vr/lamp-app-manifests
+          token: ${{ secrets.MANIFEST_REPO_TOKEN }}
+          path: manifests
+      
+      - name: Update image tags in values.yaml
+        run: |
+          cd manifests/charts/lamp-app
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          sed -i "s|phpTag:.*|phpTag: \"main-${SHORT_SHA}\"|" values.yaml
+          sed -i "s|apacheTag:.*|apacheTag: \"main-${SHORT_SHA}\"|" values.yaml
+          
+          cat values.yaml
+      
+      - name: Commit and push changes
+        run: |
+          cd manifests
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add charts/lamp-app/values.yaml
+          git commit -m "Update images to ${{ github.sha }}"
+          git push
