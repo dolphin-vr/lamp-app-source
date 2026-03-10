@@ -2,7 +2,7 @@ name: Build and Deploy LAMP App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ release ]
     paths:
       - 'app/**'
       - 'apache/**'

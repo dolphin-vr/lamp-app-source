@@ -18,7 +18,7 @@ Images are automatically built and pushed to GitHub Container Registry (GHCR):
 ## Development Workflow
 
 1. Edit code in `php/app/`
-2. Commit and push to `main` branch
+2. Commit and push to `release` branch
 3. GitHub Actions builds and pushes Docker images
 4. GitHub Actions updates image tags in `lamp-app-manifests` repo
 5. ArgoCD automatically syncs and deploys to Kubernetes
