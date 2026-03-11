@@ -1,6 +1,15 @@
 <?php
 // Connect to MySQL via Kubernetes Service
-$mysqli = new mysqli('mysql-service', 'user', 'userpass', 'dbmovies');
+$db_host = getenv('DB_HOST');
+$db_user = getenv('DB_USER');
+$db_pass = getenv('DB_PASSWORD');
+$db_name = getenv('DB_NAME');
+// Check if all required environment variables are set
+if (!$db_host || !$db_user || !$db_pass || !$db_name) {
+    die('<h2 style="color: red;">ERROR: Missing required environment variables (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)</h2>');
+}
+    
+$mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
 
 if ($mysqli->connect_error) {
     die('<h2 style="color: red;">Error connecting to MySQL</h2>' . 

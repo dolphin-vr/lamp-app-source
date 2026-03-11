@@ -4,9 +4,8 @@ on:
   push:
     branches: [ release ]
     paths:
-      - 'app/**'
-      - 'apache/**'
       - 'php/**'
+      - 'apache/**'
 
 env:
   REGISTRY: ghcr.io
@@ -97,9 +96,12 @@ jobs:
         run: |
           cd manifests/charts/lamp-app
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          sed -i "s|phpTag:.*|phpTag: \"main-${SHORT_SHA}\"|" values.yaml
-          sed -i "s|apacheTag:.*|apacheTag: \"main-${SHORT_SHA}\"|" values.yaml
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
           
+          sed -i "s|phpTag:.*|phpTag: \"${BRANCH_NAME}-${SHORT_SHA}\"|" values.yaml
+          sed -i "s|apacheTag:.*|apacheTag: \"${BRANCH_NAME}-${SHORT_SHA}\"|" values.yaml
+          
+          echo "Updated values.yaml:"
           cat values.yaml
       
       - name: Commit and push changes
@@ -108,5 +110,5 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add charts/lamp-app/values.yaml
-          git commit -m "Update images to ${{ github.sha }}"
+          git commit -m "Update images to ${{ github.sha }}" || echo "No changes to commit"
           git push
