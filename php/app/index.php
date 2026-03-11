@@ -16,6 +16,15 @@ if ($mysqli->connect_error) {
         '<p>Error: (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error . '</p>');
 }
 
+echo '<!DOCTYPE html>';
+echo '<html lang="en">';
+echo '<head>';
+echo '<meta charset="UTF-8">';
+echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+echo '<title>LAMP App on Kubernetes</title>';
+echo '</head>';
+echo '<body>';
+
 echo '<h1>LAMP Application on Kubernetes</h1>';
 echo '<h2 style="color: green;">Successfully connected to MySQL!</h2>';
 
@@ -54,6 +63,9 @@ if ($result->num_rows == 0) {
 echo '<hr>';
 echo '<p><small>Pod hostname: ' . gethostname() . '</small></p>';
 echo '<p><small>PHP version: ' . phpversion() . '</small></p>';
+
+echo '</body>';
+echo '</html>';
 
 $mysqli->close();
 ?>
