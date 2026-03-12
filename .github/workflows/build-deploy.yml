@@ -91,6 +91,7 @@ jobs:
           repository: dolphin-vr/lamp-app-manifests
           token: ${{ secrets.MANIFEST_REPO_TOKEN }}
           path: manifests
+          ref: release
       
       - name: Update image tags in values.yaml
         run: |
@@ -111,4 +112,4 @@ jobs:
           git config user.email "actions@github.com"
           git add charts/lamp-app/values.yaml
           git commit -m "Update images to ${{ github.sha }}" || echo "No changes to commit"
-          git push
+          git push origin release
