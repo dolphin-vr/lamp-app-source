@@ -61,8 +61,8 @@ if ($result->num_rows == 0) {
 
 // Information about the pod
 echo '<hr>';
-echo '<p><small>Pod hostname: ' . gethostname() . '</small></p>';
-echo '<p><small>PHP version: ' . phpversion() . '</small></p>';
+echo '<p>Pod hostname: ' . gethostname() . '</p>';
+echo '<p>PHP version: ' . phpversion() . '</p>';
 
 echo '</body>';
 echo '</html>';
